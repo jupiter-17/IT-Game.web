@@ -252,6 +252,7 @@ class Canvas {
     #text = document.getElementById("text");
     #color;         // foreground color
     #back;          // blackground color
+    #sam;           // sotware automatic mouth
 
     /// <summary>
     /// default constructor
@@ -272,6 +273,8 @@ class Canvas {
         // colors
         this.#color = globalThis.getComputedStyle( document.body ,null).getPropertyValue('color');
         this.#back = globalThis.getComputedStyle( document.body ,null).getPropertyValue('background-color');
+
+        this.#sam = new SamJs({debug:0,pitch:64,speed:72,mouth:128,throat:128});
 
         this.#OnPaint();
         this.#menu = new Menu(this, this.#color, this.#back);
@@ -483,10 +486,14 @@ class Canvas {
     /// <param name="dice">
     /// number of dice rolls.
     /// </param>
+    /// <param name="sound">
+    /// sound output
+    /// </param>
     /// <param name="select">
     /// user can throw the dice.
     /// </param>
-    #SetDice( p, dice, select = false) {
+    #SetDice( p, dice, sound, select = false) {
+        console.log("SetDice:", dice, sound, select)
         if (p == null || dice == 0)
             return;
 
@@ -496,7 +503,10 @@ class Canvas {
         GameInternal.DrawDice(img, this.#context, p.FieldPlayer.diceroll, dice - 1);
         if (select) {
             let name = GameInternal.GetPlayerName(p);
-            this.#text.innerText = `${name}: roll dice.`;
+            let text = `${name}: roll dice.`;
+            this.#text.innerText = text;
+            if( sound)
+                this.#sam.speak(text);
         }
         else
             this.#text.innerText = "---";
@@ -550,7 +560,7 @@ class Canvas {
     /// <summary>
     /// check rolling dice.
     /// </summary>
-    async #EvalDiceRoll() {
+    async #EvalDiceRoll(sound) {
         if (this.#game.Player == null)
             return false;
 
@@ -558,24 +568,22 @@ class Canvas {
         if (pd == null)
             return false;
 
-        const sound = this.#menu.GetCheck("sound");
-
         await this.#rollDiceAndIndicate(sound);
 
         const res = await this.#game.EvalDiceRoll(this.Dice);
         if (res.ft == null)
             return true;
 
-        return await this.#handleRollOutcome(pd, res);
+        return await this.#handleRollOutcome(pd, res, sound);
     }
 
     async #rollDiceAndIndicate(sound) {
         this.Dice = this.#RollDice();
-        this.#SetDice(this.#game.Player, this.Dice, false);
+        this.#SetDice(this.#game.Player, this.Dice, sound, false);
         await Globals.play(sound ? this.#sndDice : null);
     }
 
-    async #handleRollOutcome(pd, res) {
+    async #handleRollOutcome(pd, res, sound) {
         pd.Figures = res.ft;
         const name = GameInternal.GetPlayerName(this.#game.Player);
 
@@ -584,7 +592,7 @@ class Canvas {
                 pd.NumRolls++;
                 console.log("NumRolls", pd.NumRolls);
                 if (pd.NumRolls < 3) {
-                    this.#SetDice(this.#game.Player, this.Dice, true);
+                    this.#SetDice(this.#game.Player, this.Dice, sound, true);
                     if (this.#game.Player.Strategy > GamePlayer.StrategyDefinition.Manual) {
                         this.#id = setTimeout(this.#OnTime, 500);
                     }
@@ -596,14 +604,22 @@ class Canvas {
 
         if (pd.Figures.length == 1 || this.#game.Player.Strategy > GamePlayer.StrategyDefinition.Manual) {
             const f = pd.Figures[0];
-            this.#text.innerText = `${name}: track figure ${f.Number}.`;
+            const t = `${name}: track figure ${f.Number}.`;
+            this.#text.innerText = t;
+            if( sound)
+                await this.#sam.speak(t);
+
             await this.#game.TrackFigure(f, this.Dice);
             return true;
         }
 
         this.#DeleteFigures(pd.Figures);
         this.#SetFigures(pd.Figures, true);
-        this.#text.innerText = `${name}: select figure to be tracked.`;
+        const t = `${name}: select figure to be tracked.`;
+        this.#text.innerText = t;
+        if( sound)
+            await this.#sam.speak(t);
+
         return false;
     }
 
@@ -637,7 +653,7 @@ class Canvas {
     /// <returns>
     /// figure tracked.
     /// </returns>
-    async #CheckFigures(x,y) {
+    async #CheckFigures(x,y, sound) {
         if (this.#game.Player == null)
             return false;
 
@@ -653,7 +669,11 @@ class Canvas {
         this.#SetFigures(pd.Figures);
 
         const name = GameInternal.GetPlayerName(this.#game.Player);
-        this.#text.innerText = `${name}: track figure ${f.Number}.`;
+        const text = `${name}: track figure ${f.Number}.`;
+        this.#text.innerText = text;
+        if( sound)
+            await this.#sam.speak(text);
+
         await this.#game.TrackFigure(f, this.Dice);
 
         return true;
@@ -662,7 +682,7 @@ class Canvas {
     /// <summary>
     /// select next player
     /// </summary>
-    #NextPlayer() {
+    async #NextPlayer(sound) {
         let next = true;
 
         if (this.#game.Player == null)
@@ -679,14 +699,19 @@ class Canvas {
         this.#DeleteDice(this.#game.Player);
 
         if (this.Dice == 6) {
-            this.#SetDice(this.#game.Player, this.Dice, true);
+            this.#SetDice(this.#game.Player, this.Dice, sound, true);
         } else if (this.#game.SelectPlayer() === false) { // next player
-            this.#text.innerText = "Game finished!";
+            const t = "Game finished!";
+            if( sound) {
+                this.#text.innerText = t;
+                await this.#sam.speak(t);
+            }
+
             this.#PrintRanking();
             this.#ShutGame();
             next = false;
         } else {
-            this.#SetDice(this.#game.Player, this.Dice, true);
+            this.#SetDice(this.#game.Player, this.Dice, sound, true);
         }
 
         if( next) {
@@ -747,9 +772,12 @@ class Canvas {
 
             case Game.FigureAction.Start:
                 if (!this._init) {
-                    this.#text.innerText = `${name} is set into field.`
-                    if( sound)
+                    const t = `${name} is set into field.`;
+                    this.#text.innerText = t;
+                    if( sound) {
                         await Globals.play(this.#sndStart);
+                        await this.#sam.speak(t);
+                    }
                 }
                 break;
 
@@ -767,9 +795,12 @@ class Canvas {
 
             case Game.FigureAction.Defeated:
                 if (!this._init) {
-                    this.#text.innerText = `${name} is defeated.`
-                    if( sound)
+                    const t = `${name} is defeated.`;
+                    this.#text.innerText = t;
+                    if( sound) {
                         await Globals.play(this.#sndDefeat);
+                        await this.#sam.speak(t);
+                    }
                 }
                 break;
         }
@@ -799,9 +830,11 @@ class Canvas {
             GameInternal.DrawField(this.#imgField, this.#context);
 
             const park = localStorage.getItem("Parking") === "true";
+            const sound = this.#menu.GetCheck("sound");
+
             this.#game.SetFigures();
             this.#game.SetParking(park);
-            this.#SetDice(this.#game.Player, this.Dice, true);
+            this.#SetDice(this.#game.Player, this.Dice, sound, true);
         }
     }
 
@@ -820,6 +853,7 @@ class Canvas {
         const c = this.#context.canvas;
         const x = Globals.MulDiv(e.offsetX, c.width, c.offsetWidth);
         const y = Globals.MulDiv(e.offsetY, c.height, c.offsetHeight);
+        const sound = this.#menu.GetCheck("sound");
         console.log("OnMouseDown", e, x,y);
 
         this.#OnSetting(true);
@@ -828,13 +862,13 @@ class Canvas {
         if( this.#id == null && this.#IsDice(x,y) || this.#IsFigure(x,y)) {
             let hit = false;
             if (this.DiceToSelect && this.#IsDice(x,y)) {
-                hit = await this.#EvalDiceRoll();
+                hit = await this.#EvalDiceRoll(sound);
             } else {
-                hit = await this.#CheckFigures(x,y);
+                hit = await this.#CheckFigures(x,y, sound);
             }
 
             if (hit) {
-                this.#NextPlayer();
+                this.#NextPlayer(sound);
             }
         }
     }
