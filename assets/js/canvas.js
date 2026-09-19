@@ -492,7 +492,7 @@ class Canvas {
     /// <param name="select">
     /// user can throw the dice.
     /// </param>
-    #SetDice( p, dice, sound, select = false) {
+    async #SetDice( p, dice, sound, select = false) {
         console.log("SetDice:", dice, sound, select)
         if (p == null || dice == 0)
             return;
@@ -506,7 +506,7 @@ class Canvas {
             let text = `${name}: roll dice.`;
             this.#text.innerText = text;
             if( sound)
-                this.#sam.speak(text);
+                await this.#sam.speak(text);
         }
         else
             this.#text.innerText = "---";
@@ -579,7 +579,7 @@ class Canvas {
 
     async #rollDiceAndIndicate(sound) {
         this.Dice = this.#RollDice();
-        this.#SetDice(this.#game.Player, this.Dice, sound, false);
+        await this.#SetDice(this.#game.Player, this.Dice, sound, false);
         await Globals.play(sound ? this.#sndDice : null);
     }
 
@@ -592,7 +592,7 @@ class Canvas {
                 pd.NumRolls++;
                 console.log("NumRolls", pd.NumRolls);
                 if (pd.NumRolls < 3) {
-                    this.#SetDice(this.#game.Player, this.Dice, sound, true);
+                    await this.#SetDice(this.#game.Player, this.Dice, sound, true);
                     if (this.#game.Player.Strategy > GamePlayer.StrategyDefinition.Manual) {
                         this.#id = setTimeout(this.#OnTime, 500);
                     }
@@ -699,7 +699,7 @@ class Canvas {
         this.#DeleteDice(this.#game.Player);
 
         if (this.Dice == 6) {
-            this.#SetDice(this.#game.Player, this.Dice, sound, true);
+            await this.#SetDice(this.#game.Player, this.Dice, sound, true);
         } else if (this.#game.SelectPlayer() === false) { // next player
             const t = "Game finished!";
             if( sound) {
@@ -711,7 +711,7 @@ class Canvas {
             this.#ShutGame();
             next = false;
         } else {
-            this.#SetDice(this.#game.Player, this.Dice, sound, true);
+            await this.#SetDice(this.#game.Player, this.Dice, sound, true);
         }
 
         if( next) {
@@ -819,7 +819,7 @@ class Canvas {
         */
     }
 
-    #OnPaint() {
+    #OnPaint = async() => {
         console.log("OnPaint");
 
         if( this._init) {
@@ -834,7 +834,7 @@ class Canvas {
 
             this.#game.SetFigures();
             this.#game.SetParking(park);
-            this.#SetDice(this.#game.Player, this.Dice, sound, true);
+            await this.#SetDice(this.#game.Player, this.Dice, sound, true);
         }
     }
 
