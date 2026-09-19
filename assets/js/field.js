@@ -176,7 +176,7 @@ class Field {
     /// </summary>
     static playersIT = [
         new Player({
-            color: "orange",
+            color: "red",
             start: 29,             // index coordinates for start field
             Hahead: 27,            // coordinates of the field house entrance ahead
             house: [               // coordinates of the positions in the house

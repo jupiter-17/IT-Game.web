@@ -281,8 +281,8 @@ class GameInternal {
     static SelectPlayers(f) {
         const p = localStorage.getItem("Players");
         let players = Array.from(p.split(',').map( (p) => Number.parseInt(p)));
-        document.getElementById("orangeStrategy").value = players[0];
-        document.getElementById("orangeName").value = localStorage.getItem("Orange");
+        document.getElementById("redStrategy").value = players[0];
+        document.getElementById("redName").value = localStorage.getItem("Red");
         document.getElementById("yellowStrategy").value = players[1];
         document.getElementById("yellowName").value = localStorage.getItem("Yellow");
         document.getElementById("greenStrategy").value = players[2];
@@ -295,12 +295,12 @@ class GameInternal {
             e.preventDefault(); 
             console.log("OK", e);
 
-            localStorage.setItem("Orange", document.getElementById("orangeName").value);
+            localStorage.setItem("Red", document.getElementById("redName").value);
             localStorage.setItem("Yellow", document.getElementById("yellowName").value);
             localStorage.setItem("Green", document.getElementById("greenName").value);
             localStorage.setItem("Blue", document.getElementById("blueName").value);
 
-            players[0] = document.getElementById("orangeStrategy").value;
+            players[0] = document.getElementById("redStrategy").value;
             players[1] = document.getElementById("yellowStrategy").value;
             players[2] = document.getElementById("greenStrategy").value;
             players[3] = document.getElementById("blueStrategy").value;
@@ -327,7 +327,7 @@ class GameInternal {
     /// </returns>
     static GetPlayerName(p) {
         switch (p.Index) {
-            case 0: return localStorage.getItem("Orange");
+            case 0: return localStorage.getItem("Red");
             case 1: return localStorage.getItem("Yellow");
             case 2: return localStorage.getItem("Green");
             case 3: return localStorage.getItem("Blue");

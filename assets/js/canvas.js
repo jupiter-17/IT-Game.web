@@ -56,7 +56,7 @@ class Menu {
 
     static #storage = [
         { n: "Players", d: "1,1,1,1" },
-        { n: "Orange", d: "orange" },
+        { n: "Red", d: "red" },
         { n: "Yellow", d: "yellow" },
         { n: "Green", d: "green" },
         { n: "Blue", d: "blue" },
