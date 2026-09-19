@@ -427,6 +427,13 @@ class GamePlayer
         }
     }
 
+    /// <summary
+    /// Player is manual
+    /// </summary>
+    IsManual() {
+        return this.Strategy === GamePlayer.StrategyDefinition.Manual
+    }    
+
     /// <summary>
     /// place figures on the field
     /// </summary>
@@ -1094,7 +1101,7 @@ class Game {
         let lstfd = new Array();   // figures to defeat Field.GameMaxFigure
         let lstft = new Array();   // figures to track Field.GameMaxFigure
 
-        if (this.ForceDefeat || this.Player.Strategy != GamePlayer.StrategyDefinition.Manual) {
+        if (this.ForceDefeat || this.Player.IsManual()) {
             // at first determine if other figures can be defeated
             for (let f of this.Player.Figures) {
                 const res = this.CheckTrackFigure(f, dice, true);

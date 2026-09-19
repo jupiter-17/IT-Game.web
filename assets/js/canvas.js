@@ -351,8 +351,7 @@ class Canvas {
         this.#OnPaint();
 
         // computer plays
-        if( this.#game.Player != null && 
-            this.#game.Player.Strategy > GamePlayer.StrategyDefinition.Manual) {
+        if( this.#game.Player != null && !this.#game.Player.IsManual()) {
             this.#id = setTimeout( this.#OnTime, 0);
         }
     }
@@ -502,8 +501,11 @@ class Canvas {
 
         GameInternal.DrawDice(img, this.#context, p.FieldPlayer.diceroll, dice - 1);
         if (select) {
-            let name = GameInternal.GetPlayerName(p);
-            let text = `${name}: roll dice.`;
+            const name = GameInternal.GetPlayerName(p);
+
+            const text = p.IsManual() 
+                ? `${name}: roll dice.`
+                : `${name}: dice is rolling.`;
             this.#text.innerText = text;
             if( sound)
                 await this.#sam.speak(text);
@@ -593,18 +595,20 @@ class Canvas {
                 console.log("NumRolls", pd.NumRolls);
                 if (pd.NumRolls < 3) {
                     await this.#SetDice(this.#game.Player, this.Dice, sound, true);
-                    if (this.#game.Player.Strategy > GamePlayer.StrategyDefinition.Manual) {
+                    if (!this.#game.Player.IsManual()) {
                         this.#id = setTimeout(this.#OnTime, 500);
                     }
+
                     return false;
                 }
             }
             return true;
         }
 
-        if (pd.Figures.length == 1 || this.#game.Player.Strategy > GamePlayer.StrategyDefinition.Manual) {
+        // only one figure or computer plays.
+        if (pd.Figures.length == 1 || !this.#game.Player.IsManual()) {
             const f = pd.Figures[0];
-            const t = `${name}: track figure ${f.Number}.`;
+            const t = `${name}: track piece by ${this.Dice}.`;
             this.#text.innerText = t;
             if( sound)
                 await this.#sam.speak(t);
@@ -615,7 +619,7 @@ class Canvas {
 
         this.#DeleteFigures(pd.Figures);
         this.#SetFigures(pd.Figures, true);
-        const t = `${name}: select figure to be tracked.`;
+        const t = `${name}: select piece to be tracked.`;
         this.#text.innerText = t;
         if( sound)
             await this.#sam.speak(t);
@@ -669,7 +673,7 @@ class Canvas {
         this.#SetFigures(pd.Figures);
 
         const name = GameInternal.GetPlayerName(this.#game.Player);
-        const text = `${name}: track figure ${f.Number}.`;
+        const text = `${name}: track piece by ${this.Dice}.`;
         this.#text.innerText = text;
         if( sound)
             await this.#sam.speak(text);
@@ -716,8 +720,8 @@ class Canvas {
 
         if( next) {
             // computer plays
-            if( this.#game.Player.Strategy > GamePlayer.StrategyDefinition.Manual) {
-                this.#id = setTimeout( this.#OnTime, 0);
+            if( !this.#game.Player.IsManual()) {
+                this.#id = setTimeout( this.#OnTime, 100);
             }
         }
     }
@@ -830,11 +834,10 @@ class Canvas {
             GameInternal.DrawField(this.#imgField, this.#context);
 
             const park = localStorage.getItem("Parking") === "true";
-            const sound = this.#menu.GetCheck("sound");
 
             this.#game.SetFigures();
             this.#game.SetParking(park);
-            await this.#SetDice(this.#game.Player, this.Dice, sound, true);
+            await this.#SetDice(this.#game.Player, this.Dice, false, true);
         }
     }
 
@@ -874,11 +877,11 @@ class Canvas {
     }
 
     /// <summary>
-    /// automatic dice on on computer plays
+    /// automatic dice on computer plays
     /// </summary>
     #OnTime = async(e) => {
         const sound = this.#menu.GetCheck("sound");
-        console.log("OnTime", e, this, sound);
+        console.log("OnTime", this, sound);
 
         clearTimeout(this.#id);
         this.#id = null;
