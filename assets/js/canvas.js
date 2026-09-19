@@ -868,7 +868,7 @@ class Canvas {
             }
 
             if (hit) {
-                this.#NextPlayer(sound);
+                await this.#NextPlayer(sound);
             }
         }
     }
@@ -877,13 +877,14 @@ class Canvas {
     /// automatic dice on on computer plays
     /// </summary>
     #OnTime = async(e) => {
-        console.log("OnTime", e, this);
+        const sound = this.#menu.GetCheck("sound");
+        console.log("OnTime", e, this, sound);
 
         clearTimeout(this.#id);
         this.#id = null;
 
-        if( await this.#EvalDiceRoll())
-           this.#NextPlayer();
+        if( await this.#EvalDiceRoll(sound))
+           await this.#NextPlayer(sound);
     }
 
     /// <summary>
