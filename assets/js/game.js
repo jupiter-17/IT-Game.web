@@ -273,9 +273,9 @@ class GameFigure {
     /// <summary>
     /// figure is defeated
     /// </summary>
-    Defeated() {
+    async Defeated() {
         if (!this.Test)
-            this.Player.Game.Canvas.OnFigure(this.Player, this, Game.FigureAction.Defeated);
+            await this.Player.Game.Canvas.OnFigure(this.Player, this, Game.FigureAction.Defeated);
 
         this.SetCorner();
     }
@@ -1068,7 +1068,7 @@ class Game {
             else
             {
                 f2.Delete();            // delete figure from the field
-                f2.Defeated();
+                await f2.Defeated();
                 fig.Set();
                 await this.Canvas.OnFigure(this.Player, fig, Game.FigureAction.Track);
                 f2.Set();
@@ -1184,7 +1184,7 @@ class Game {
                     fig.Delete();                   // delete figure from corner
 
                     fig.SetStart();
-                    fig2.Defeated();                // figure defeated
+                    await fig2.Defeated();          // figure defeated
 
                     await fig.Set();                // set to start position
                     await fig2.Set();
