@@ -326,6 +326,16 @@ class Canvas {
     }
 
     /// <summary>
+    /// set text and speak with ttl
+    /// </summary>
+    async #SetText( text, sound) {
+        this.#text.innerText = text;
+        if( sound) {
+            await this.#sam.speak(text);
+        }
+    }
+
+    /// <summary>
     /// initialize game
     /// </summary>
     #InitGame() {
@@ -369,7 +379,7 @@ class Canvas {
         this.#menu.SetCheck("new", false);
         this.#game.SetPlayers(null);
         this.Dice = 0;
-        this.#text.innerText = "---";
+        this.#SetText("---", false);
         this.#OnPaint();
     };
     
@@ -506,12 +516,10 @@ class Canvas {
             const text = p.IsManual() 
                 ? `${name}: roll dice.`
                 : `${name}: dice is rolling.`;
-            this.#text.innerText = text;
-            if( sound)
-                await this.#sam.speak(text);
+            await this.#SetText( text, sound);
+        } else {
+            this.#SetText( "---", false);
         }
-        else
-            this.#text.innerText = "---";
     }
 
     /// <summary>
@@ -609,10 +617,7 @@ class Canvas {
         if (pd.Figures.length == 1 || !this.#game.Player.IsManual()) {
             const f = pd.Figures[0];
             const t = `${name}: track piece by ${this.Dice}.`;
-            this.#text.innerText = t;
-            if( sound)
-                await this.#sam.speak(t);
-
+            await this.#SetText( t, sound);
             await this.#game.TrackFigure(f, this.Dice);
             return true;
         }
@@ -620,9 +625,7 @@ class Canvas {
         this.#DeleteFigures(pd.Figures);
         this.#SetFigures(pd.Figures, true);
         const t = `${name}: select piece to be tracked.`;
-        this.#text.innerText = t;
-        if( sound)
-            await this.#sam.speak(t);
+        await this.#SetText( t, sound);
 
         return false;
     }
@@ -674,10 +677,7 @@ class Canvas {
 
         const name = GameInternal.GetPlayerName(this.#game.Player);
         const text = `${name}: track piece by ${this.Dice}.`;
-        this.#text.innerText = text;
-        if( sound)
-            await this.#sam.speak(text);
-
+        await this.#SetText( text, sound);
         await this.#game.TrackFigure(f, this.Dice);
 
         return true;
@@ -706,10 +706,7 @@ class Canvas {
             await this.#SetDice(this.#game.Player, this.Dice, sound, true);
         } else if (this.#game.SelectPlayer() === false) { // next player
             const t = "Game finished!";
-            if( sound) {
-                this.#text.innerText = t;
-                await this.#sam.speak(t);
-            }
+            await this.#SetText( t, sound);
 
             this.#PrintRanking();
             this.#ShutGame();
@@ -777,10 +774,10 @@ class Canvas {
             case Game.FigureAction.Start:
                 if (!this._init) {
                     const t = `${name} is set into field.`;
-                    this.#text.innerText = t;
+                    this.#SetText( t, false);
                     if( sound) {
                         await Globals.play(this.#sndStart);
-                        await this.#sam.speak(t);
+                        await this.#SetText( t, true);
                     }
                 }
                 break;
@@ -800,10 +797,10 @@ class Canvas {
             case Game.FigureAction.Defeated:
                 if (!this._init) {
                     const t = `${name} is defeated.`;
-                    this.#text.innerText = t;
+                    this.#SetText( t, false);
                     if( sound) {
                         await Globals.play(this.#sndDefeat);
-                        await this.#sam.speak(t);
+                        this.#SetText( t, true);
                     }
                 }
                 break;
