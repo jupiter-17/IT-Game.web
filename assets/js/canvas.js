@@ -252,7 +252,6 @@ class Canvas {
     #text = document.getElementById("text");
     #color;         // foreground color
     #back;          // blackground color
-    // #tts;           // text-to-speech engine
 
     /// <summary>
     /// default constructor
@@ -274,8 +273,6 @@ class Canvas {
         this.#color = globalThis.getComputedStyle( document.body ,null).getPropertyValue('color');
         this.#back = globalThis.getComputedStyle( document.body ,null).getPropertyValue('background-color');
 
-        // this.#tts = new SamJs({debug:0,pitch:64,speed:72,mouth:128,throat:128});
-        
         this.#OnPaint();
         this.#menu = new Menu(this, this.#color, this.#back);
 

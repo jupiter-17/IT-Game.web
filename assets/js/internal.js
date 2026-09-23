@@ -51,12 +51,17 @@ class Globals {
                 console.log("speak:", t);
                 if( t) {
                     let u = new SpeechSynthesisUtterance(t);
-                    u.lang = "en-US";
-                    u.name = "English (America)+Alex";
-                    u.pitch = "1.0";
-                    u.rate = "1.0";
-                    speechSynthesis.speak(u);
-                    u.onend = resolve;
+                    if( u) {
+                        u.lang = "en-US";
+                        u.name = "English (America)+Alex";
+                        u.pitch = "1.0";
+                        u.rate = "1.0";
+                        speechSynthesis.speak(u);
+                        u.onend = resolve;
+                    } else {
+                        const tts = new SamJs({debug:0,pitch:64,speed:72,mouth:128,throat:128});
+                        tts.speak(t);
+                    }
                 } else {
                     setTimeout(resolve, b);     // just sleep
                 }
