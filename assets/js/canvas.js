@@ -252,7 +252,7 @@ class Canvas {
     #text = document.getElementById("text");
     #color;         // foreground color
     #back;          // blackground color
-    #sam;           // sotware automatic mouth
+    // #tts;           // text-to-speech engine
 
     /// <summary>
     /// default constructor
@@ -274,8 +274,8 @@ class Canvas {
         this.#color = globalThis.getComputedStyle( document.body ,null).getPropertyValue('color');
         this.#back = globalThis.getComputedStyle( document.body ,null).getPropertyValue('background-color');
 
-        this.#sam = new SamJs({debug:0,pitch:64,speed:72,mouth:128,throat:128});
-
+        // this.#tts = new SamJs({debug:0,pitch:64,speed:72,mouth:128,throat:128});
+        
         this.#OnPaint();
         this.#menu = new Menu(this, this.#color, this.#back);
 
@@ -331,7 +331,7 @@ class Canvas {
     async #SetText( text, sound) {
         this.#text.innerText = text;
         if( sound) {
-            await this.#sam.speak(text);
+            await Globals.speak(text)
         }
     }
 

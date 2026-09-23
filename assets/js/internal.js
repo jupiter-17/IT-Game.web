@@ -42,6 +42,26 @@ class Globals {
                 }
         })
     }
+
+    /// <summary>
+    /// sychron speak text
+    /// </summary>
+    static async speak(t, b = 300) {
+        return new Promise(resolve => {
+                console.log("speak:", t);
+                if( t) {
+                    let u = new SpeechSynthesisUtterance(t);
+                    u.lang = "en-US";
+                    u.name = "English (America)+Alex";
+                    u.pitch = "1.0";
+                    u.rate = "1.0";
+                    speechSynthesis.speak(u);
+                    u.onend = resolve;
+                } else {
+                    setTimeout(resolve, b);     // just sleep
+                }
+        })
+    }
 }
 
 /// <summary>
