@@ -328,7 +328,12 @@ class Canvas {
     async #SetText( text, sound) {
         this.#text.innerText = text;
         if( sound) {
-            await Globals.speak(text)
+            if( speechSynthesis.getVoices().length > 0) {
+                await Globals.speak(text);
+            } else {
+                const tts = new SamJs({debug:0,pitch:64,speed:72,mouth:128,throat:128});
+                await tts.speak(text);
+            }
         }
     }
 
