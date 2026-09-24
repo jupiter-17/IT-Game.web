@@ -252,6 +252,7 @@ class Canvas {
     #text = document.getElementById("text");
     #color;         // foreground color
     #back;          // blackground color
+    #sib;           // use in-build speech systhesis
 
     /// <summary>
     /// default constructor
@@ -272,6 +273,8 @@ class Canvas {
         // colors
         this.#color = globalThis.getComputedStyle( document.body ,null).getPropertyValue('color');
         this.#back = globalThis.getComputedStyle( document.body ,null).getPropertyValue('background-color');
+
+        this.#sib = speechSynthesis.getVoices().length > 0;
 
         this.#OnPaint();
         this.#menu = new Menu(this, this.#color, this.#back);
@@ -328,11 +331,11 @@ class Canvas {
     async #SetText( text, sound) {
         this.#text.innerText = text;
         if( sound) {
-            if( speechSynthesis.getVoices().length > 0) {
+            if( this.#sib) {
                 await Globals.speak(text);
             } else {
                 const tts = new SamJs({debug:0,pitch:64,speed:72,mouth:128,throat:128});
-                await tts.speak(text);
+                tts.speak(text);
             }
         }
     }
