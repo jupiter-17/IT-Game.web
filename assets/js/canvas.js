@@ -335,7 +335,7 @@ class Canvas {
                 await Globals.speak(text);
             } else {
                 const tts = new SamJs({debug:0,pitch:64,speed:72,mouth:128,throat:128});
-                tts.speak(text);
+                await tts.speak(text);
             }
         }
     }
